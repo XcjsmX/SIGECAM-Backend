@@ -1,6 +1,8 @@
-@SigecamBackend_HostAddress = http://localhost:5089
+POST http://localhost:5089/api/Auth/register
+Content-Type: application/json
 
-GET {{SigecamBackend_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
+{
+  "nombre": "Cristian Sanchez",
+  "email": "cristian@sigecam.hn",
+  "password": "Password123!"
+}
