@@ -1,0 +1,6 @@
+@SigecamBackend_HostAddress = http://localhost:5089
+
+GET {{SigecamBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
