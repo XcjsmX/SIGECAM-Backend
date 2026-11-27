@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SIGECAM - Sistema de Gestión de Citas y Medicamentos</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header class="topbar">
+    <div class="brand">
+        <h1>SIGECAM</h1>
+        <span>Gestión de Citas Médicas y Farmacia</span>
+    </div>
+    <div id="user-bar" class="user-bar hidden">
+        <span id="user-info"></span>
+        <button id="btn-logout" class="btn btn-outline">Cerrar sesión</button>
+    </div>
+</header>
+
+<main class="container">
+    <div id="alert-box" class="alert hidden"></div>
+
+    <!-- VISTA DE AUTENTICACIÓN (LOGIN / REGISTRO) -->
+    <section id="auth-section" class="auth-grid">
+        <div class="card">
+            <h2>Iniciar Sesión</h2>
+            <form id="login-form">
+                <label>Correo electrónico</label>
+                <input type="email" id="login-email" placeholder="ejemplo@sigecam.hn" required />
+
+                <label>Contraseña</label>
+                <input type="password" id="login-password" placeholder="••••••••" required />
+
+                <button type="submit" class="btn btn-primary full">Entrar</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Crear Cuenta (Paciente)</h2>
+            <form id="register-form">
+                <label>Nombre completo</label>
+                <input type="text" id="reg-nombre" placeholder="María López" required />
+
+                <label>Correo electrónico</label>
+                <input type="email" id="reg-email" placeholder="maria@sigecam.hn" required />
+
+                <label>Contraseña</label>
+                <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" required />
+
+                <button type="submit" class="btn btn-secondary full">Registrarme</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- PANEL ROL: PACIENTE -->
+    <section id="panel-paciente" class="hidden">
+        <div class="grid-2">
+            <div class="card">
+                <h2>Solicitar Nueva Cita</h2>
+                <form id="cita-form">
+                    <label>Centro de Salud</label>
+                    <select id="cita-centro" required></select>
+
+                    <label>Servicio Médico</label>
+                    <input type="text" id="cita-servicio" value="Medicina General" required />
+
+                    <label>Fecha de Atención</label>
+                    <input type="date" id="cita-fecha" required />
+
+                    <button type="submit" class="btn btn-primary full">Reservar Cita</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Mis Citas</h2>
+                    <button id="btn-refresh-citas" class="btn btn-sm">Actualizar</button>
+                </div>
+                <div id="mis-citas-list" class="list-container"></div>
+            </div>
+        </div>
+
+        <div class="card mt">
+            <h2>Historial de Medicamentos Dispensados</h2>
+            <div id="mis-dispensaciones-list" class="list-container"></div>
+        </div>
+    </section>
+
+    <!-- PANEL ROL: PERSONAL DE SALUD -->
+    <section id="panel-medico" class="hidden">
+        <div class="card">
+            <h2>Atender Consulta y Dispensar Medicamentos</h2>
+            <form id="consulta-form">
+                <div class="grid-2">
+                    <div>
+                        <label>ID de la Cita a Atender</label>
+                        <input type="text" id="cons-cita-id" placeholder="Pega el ID de la cita programada" required />
+
+                        <label>Diagnóstico Médico</label>
+                        <input type="text" id="cons-diagnostico" placeholder="Ej. Faringitis aguda" required />
+
+                        <label>Observaciones</label>
+                        <textarea id="cons-observaciones" rows="3" placeholder="Indicaciones para el paciente"></textarea>
+                    </div>
+
+                    <div>
+                        <label>Centro de Salud (para cargar farmacia)</label>
+                        <select id="cons-centro"></select>
+
+                        <label>Medicamento a Dispensar (opcional)</label>
+                        <select id="cons-medicamento">
+                            <option value="">-- Ninguno --</option>
+                        </select>
+
+                        <label>Cantidad a Entregar</label>
+                        <input type="number" id="cons-cantidad" min="1" value="1" />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt">Finalizar Consulta y Dispensar</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- PANEL ROL: ADMINISTRADOR -->
+    <section id="panel-admin" class="hidden">
+        <div class="grid-2">
+            <div class="card">
+                <h2>Registrar Centro de Salud</h2>
+                <form id="centro-form">
+                    <label>Nombre del Centro</label>
+                    <input type="text" id="centro-nombre" placeholder="Centro de Salud Alonso Suazo" required />
+
+                    <label>Ubicación</label>
+                    <input type="text" id="centro-ubicacion" placeholder="Barrio Morazán, Tegucigalpa" required />
+
+                    <label>Servicios (separados por coma)</label>
+                    <input type="text" id="centro-servicios" value="Medicina General, Pediatría, Farmacia" required />
+
+                    <button type="submit" class="btn btn-primary full">Guardar Centro</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Configurar Cupos Diarios</h2>
+                <form id="cupo-form">
+                    <label>Centro de Salud</label>
+                    <select id="cupo-centro" required></select>
+
+                    <label>Servicio</label>
+                    <input type="text" id="cupo-servicio" value="Medicina General" required />
+
+                    <label>Fecha</label>
+                    <input type="date" id="cupo-fecha" required />
+
+                    <label>Cupos Máximos</label>
+                    <input type="number" id="cupo-maximo" min="1" value="20" required />
+
+                    <button type="submit" class="btn btn-primary full">Asignar Cupos</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="grid-2 mt">
+            <div class="card">
+                <h2>Agregar Medicamento al Inventario</h2>
+                <form id="med-form">
+                    <label>Centro de Salud</label>
+                    <select id="med-centro" required></select>
+
+                    <label>Nombre del Medicamento</label>
+                    <input type="text" id="med-nombre" placeholder="Ibuprofeno" required />
+
+                    <label>Presentación</label>
+                    <input type="text" id="med-presentacion" placeholder="Tabletas 400mg" required />
+
+                    <label>Stock Inicial</label>
+                    <input type="number" id="med-stock" min="0" value="50" required />
+
+                    <label>Stock Mínimo (Alerta)</label>
+                    <input type="number" id="med-minimo" min="0" value="10" required />
+
+                    <button type="submit" class="btn btn-primary full">Registrar Medicamento</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Inventario por Centro</h2>
+                    <select id="inv-centro-filter"></select>
+                </div>
+                <div id="inventario-list" class="list-container"></div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
