@@ -1,8 +1,131 @@
+### 1. Iniciar sesion como Admin (Guarda el token automaticamente)
+POST http://localhost:5089/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "cristian@sigecam.hn",
+  "password": "Password123!"
+}
+
+> {% client.global.set("auth_token", response.body.token); %}
+
+### 2. Asignar cupos diarios al centro creado
+POST http://localhost:5089/api/HealthCenters/slots
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "centroId": "lmJhrtk7RFqNsagetQuq",
+  "servicio": "Medicina General",
+  "fecha": "2026-11-30",
+  "cupoTotal": 20
+}
+
+### 3. Registrar un Paciente de prueba (Guarda su token automaticamente)
+POST http://localhost:5089/api/Auth/login
+Content-Type: application/json
+
+{
+  "nombre": "Maria Lopez",
+  "email": "maria.paciente@sigecam.hn",
+  "password": "Password123!"
+}
+
+> {% client.global.set("paciente_token", response.body.token); %}
+
+### 4. Solicitar Cita como Paciente (Descuenta 1 cupo en transaccion)
+POST http://localhost:5089/api/Appointments
+Content-Type: application/json
+Authorization: Bearer {{paciente_token}}
+
+{
+  "centroId": "lmJhrtk7RFqNsagetQuq",
+  "servicio": "Medicina General",
+  "fecha": "2026-11-30"
+}
+
+### 5. Intentar solicitar una segunda cita activa en el mismo servicio (Debe bloquearse con 400 Bad Request)
+POST http://localhost:5089/api/Appointments
+Content-Type: application/json
+Authorization: Bearer {{paciente_token}}
+
+{
+  "centroId": "lmJhrtk7RFqNsagetQuq",
+  "servicio": "Medicina General",
+  "fecha": "2026-11-30"
+}
+
+### 6. Cancelar cita como Paciente (Libera el cupo automaticamente)
+PATCH http://localhost:5089/api/Appointments/s28A2369GRom9sy7PtmK/cancel
+Content-Type: application/json
+Authorization: Bearer {{paciente_token}}
+
+{
+  "justificacion": "No podre asistir por motivo laboral"
+}
+
+### 7. Registrar un Medico (Luego cambiale el rol a "PersonalSalud" en Firestore)
 POST http://localhost:5089/api/Auth/register
 Content-Type: application/json
 
 {
-  "nombre": "Cristian Sanchez",
-  "email": "cristian@sigecam.hn",
+  "nombre": "Dr. Carlos Mendez",
+  "email": "doctor@sigecam.hn",
   "password": "Password123!"
+}
+
+### 8. Login como Medico (Ejecutar DESPUES de cambiar su rol en Firestore)
+POST http://localhost:5089/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "doctor@sigecam.hn",
+  "password": "Password123!"
+}
+
+> {% client.global.set("medico_token", response.body.token); %}
+
+### 9. Registrar Acetaminofen en el inventario del centro (Solo Admin)
+POST http://localhost:5089/api/Medications
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "centroId": "lmJhrtk7RFqNsagetQuq",
+  "nombre": "Acetaminofen",
+  "presentacion": "Tabletas 500mg",
+  "stockActual": 50,
+  "stockMinimo": 10
+}
+
+> {% client.global.set("medicamento_id", response.body.id); %}
+
+### 10. Solicitar una nueva cita activa como Paciente (Porque la anterior la cancelamos)
+POST http://localhost:5089/api/Appointments
+Content-Type: application/json
+Authorization: Bearer {{paciente_token}}
+
+{
+  "centroId": "lmJhrtk7RFqNsagetQuq",
+  "servicio": "Medicina General",
+  "fecha": "2026-11-30"
+}
+
+> {% client.global.set("cita_id", response.body.id); %}
+
+### 11. Atender la consulta y dispensar medicamentos (Solo PersonalSalud)
+POST http://localhost:5089/api/Consultations
+Content-Type: application/json
+Authorization: Bearer {{medico_token}}
+
+{
+  "citaId": "{{cita_id}}",
+  "diagnostico": "Faringitis aguda viral",
+  "observaciones": "Reposo e hidratacion por 3 dias",
+  "medicamentosDispensados": [
+    {
+      "medicamentoId": "{{medicamento_id}}",
+      "cantidad": 12
+    }
+  ]
 }
